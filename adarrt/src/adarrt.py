@@ -106,10 +106,14 @@ class AdaRRT():
         """
         for k in range(self.max_iter):
             # FILL in your code here
+            sample = self._get_random_sample()
+            neighbor = self._get_nearest_neighbor(sample)
+            new_node = self._extend_sample(sample, neighbor)
 
             if new_node and self._check_for_completion(new_node):
                 # FILL in your code here
-
+                path = self._trace_path_from_start(new_node)
+                print(f"Found path in {k} iterations")
                 return path
 
         print("Failed to find path from {0} to {1} after {2} iterations!".format(
@@ -123,6 +127,7 @@ class AdaRRT():
             space.
         """
         # FILL in your code here
+        return np.random.uniform(self.joint_lower_limits, self.joint_upper_limits)
 
     def _get_nearest_neighbor(self, sample):
         """
@@ -133,6 +138,9 @@ class AdaRRT():
         :returns: A Node object for the closest neighbor.
         """
         # FILL in your code here
+        nodes = list(self.start)
+        nearest = min(nodes, key=lambda node: np.linalg.norm(node.state - sample))
+        return nearest
 
     def _extend_sample(self, sample, neighbor):
         """
@@ -146,6 +154,18 @@ class AdaRRT():
         :returns: The new Node object. On failure (collision), returns None.
         """
         # FILL in your code here
+        direction = sample - neighbor.state
+        dist = np.linalg.norm(direction)
+        if dist == 0:
+            return None
+
+        direction /= dist
+        new_state = neighbor.state + self.step_size * direction
+
+        if self._check_for_collision(new_state):
+            return None
+
+        return neighbor.add_child(new_state)
 
     def _check_for_completion(self, node):
         """
@@ -155,6 +175,8 @@ class AdaRRT():
         :returns: Boolean indicating node is close enough for completion.
         """
         # FILL in your code here
+        return np.linalg.norm(node.state - self.goal.state) < self.goal_precision
+
 
     def _trace_path_from_start(self, node=None):
         """
@@ -166,6 +188,11 @@ class AdaRRT():
             ending at the goal state.
         """
         # FILL in your code here
+        path = []
+        while node is not None:
+            path.append(node.state)
+            node = node.parent
+        return list(reversed(path))
 
     def _check_for_collision(self, sample):
         """
