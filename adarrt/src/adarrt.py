@@ -112,8 +112,9 @@ class AdaRRT():
 
             if new_node and self._check_for_completion(new_node):
                 # FILL in your code here
-                path = self._trace_path_from_start(new_node)
-                print(f"Found path in {k} iterations")
+                self.goal.parent = new_node
+                path = self._trace_path_from_start(self.goal)
+                print("Found path in {} iterations".format(k))
                 return path
 
         print("Failed to find path from {0} to {1} after {2} iterations!".format(
@@ -288,3 +289,4 @@ if __name__ == '__main__':
     parser.set_defaults(is_sim=True)
     args = parser.parse_args()
     main(args.is_sim)
+
