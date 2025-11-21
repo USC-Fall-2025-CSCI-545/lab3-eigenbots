@@ -106,7 +106,12 @@ class AdaRRT():
         """
         for k in range(self.max_iter):
             # FILL in your code here
-            sample = self._get_random_sample()
+            
+            if np.random.random() > 0.2:
+                sample = self._get_random_sample()
+            else:
+                sample = self._get_random_sample_near_goal()
+                
             neighbor = self._get_nearest_neighbor(sample)
             new_node = self._extend_sample(sample, neighbor)
 
@@ -129,6 +134,9 @@ class AdaRRT():
         """
         # FILL in your code here
         return np.random.uniform(self.joint_lower_limits, self.joint_upper_limits)
+    
+    def _get_random_sample_near_goal(self):
+        return self.goal.state + np.random.uniform(-0.05,0.05,6)
 
     def _get_nearest_neighbor(self, sample):
         """
@@ -274,7 +282,7 @@ def main(is_sim):
             waypoints.append((0.0 + i, waypoint))
 
         t0 = time.clock()
-        traj = ada.compute_joint_space_path(
+        traj = ada.compute_smooth_joint_space_path(
             ada.get_arm_state_space(), waypoints)
         t = time.clock() - t0
         print(str(t) + "seconds elapsed")
@@ -289,4 +297,3 @@ if __name__ == '__main__':
     parser.set_defaults(is_sim=True)
     args = parser.parse_args()
     main(args.is_sim)
-
